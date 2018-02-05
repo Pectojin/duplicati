@@ -895,19 +895,37 @@ body {
 
                     .tasklist {
                         .task {
-                            border-top: 1px solid #eee;
+                            border-top: 0px;
                             padding-top: 20px;
                             margin-bottom: 25px;
                         }
 
-                        .task:last-child {
+                        .even > :last-child {
                             border-bottom: 1px solid #eee;
                             padding-bottom: 20px;
                         }
 
-                        .task:first-child {
+                        .even > :first-child {
                             padding-top: 0px;
                             border-top: 0px none;
+                        }
+
+                        .odd > :last-child {
+                            border-bottom: 1px solid #eee;
+                            padding-bottom: 20px;
+                        }
+
+                        .odd > :first-child {
+                            padding-top: 0px;
+                            border-top: 0px none;
+                        }
+
+                        .even {
+                            float: right;
+                        }
+
+                        .odd {
+                            float: left;
                         }
 
                         a {
@@ -2267,6 +2285,32 @@ div.modal-dialog {
 
                     .state {
                         width: auto;
+                    }
+
+                    .tasks {
+                        .tasklist {
+                            .task {
+                                padding-top: 20px;
+                                margin-bottom: 25px;
+                            }
+
+                            .task:last-child {
+                                padding-bottom: 20px;
+                            }
+
+                            .task:first-child {
+                                padding-top: 0px;
+                                border-top: 0px none;
+                            }
+
+                            .even {
+                                float: none;
+                            }
+
+                            .odd {
+                                float: none;
+                            }
+                        }
                     }
                 }
             }
