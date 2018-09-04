@@ -14,7 +14,12 @@
         <ul class="entries">
             <li ng-show="LogData == null" translate>Loading ...</li>
             <li ng-repeat="item in LogData">
-                <div ng-click="expanded = !expanded" class="entryline">{{item.Timestamp | parsetimestamp}}: {{item.Message}}</div>
+                <div ng-click="expanded = !expanded" class="entryline">
+                <button class="btn btn-small">
+                    <span ng-show="!expanded">Expand</span>
+                    <span ng-show="expanded">Collapse</span>
+                </button>
+                {{item.Timestamp | parsetimestamp}}: {{item.Message}}</div>
                 <div ng-show="expanded" class="prewrapped-text exceptiontext">{{item.Exception}}</div>
             </li>
         </ul>
@@ -34,8 +39,13 @@
 
         <ul class="entries livedata">
             <li ng-repeat="item in LiveData" ng-class="{expanded: expanded}">
-                <div ng-click="expanded = !expanded" class="entryline" ng-class="{noexception: item.Exception == null, clickable: item.Exception != null}">{{item.When | parsetimestamp}}: {{item.Message}}</div>
-                <div ng-show="expanded &amp;&amp; item.Exception != null" class="prewrapped-text exceptiontext">{{item.Exception}}</div>
+                <div ng-click="expanded = !expanded" class="entryline" ng-class="{noexception: item.Exception == null, clickable: item.Exception != null}">
+                <button class="btn btn-small" ng-show="expanded && item.Exception != null">
+                    <span ng-show="!expanded">Expand</span>
+                    <span ng-show="expanded">Collapse</span>
+                </button>
+                {{item.When | parsetimestamp}}: {{item.Message}}</div>
+                <div ng-show="expanded && item.Exception != null" class="prewrapped-text exceptiontext">{{item.Exception}}</div>
             </li>
         </ul>
     </div>
@@ -44,9 +54,79 @@
         <ul class="entries">
             <li ng-show="GeneralData == null" translate>Loading ...</li>
             <li ng-repeat="item in GeneralData">
-                <div ng-click="expanded = !expanded" class="entryline">{{item.Timestamp | parsetimestamp}}: {{item.Type}}</div>
-                <div ng-show="expanded" class="prewrapped-text exceptiontext">{{item.Message}}</div>
-                <div ng-show="expanded" class="prewrapped-text exceptiontext">{{item.Exception}}</div>
+                <div ng-click="short_info = !short_info" class="entryline">
+                    <button class="btn btn-small">
+                        <span ng-show="!short_info">Expand</span>
+                        <span ng-show="short_info">Collapse</span>
+                    </button>
+                    {{item.Timestamp | parsetimestamp}}: {{ item.BackupResults.MainOperation }}
+                </div>
+                <div ng-show="short_info" class="exceptiontext short-log-info">
+                    <div style="float: left; width: 50%">
+                        <p>
+                            Operation: {{ item.BackupResults.MainOperation }}
+                        </p>
+                        <p ng-show="item.BackupResults.Dryrun != null">
+                            Dry Run: {{ item.BackupResults.Dryrun }}
+                        </p>
+                        <p>
+                            Result: {{ item.BackupResults.ParsedResult }}
+                        </p>
+                        <p>
+                            Duration: {{ formatDuration(item.BackupResults.Duration) }} seconds
+                        </p>
+                        <p>
+                            Test result: {{ item.TestParsedResult }}
+                        </p>
+                        <p ng-show="formatDuration(item.TestDuration) > 0">
+                            Test duration: {{ formatDuration(item.TestDuration) }} seconds
+                        </p>
+                        <p>
+                            Duplicati Version: {{ item.BackupResults.Version }}
+                        </p>
+
+                    </div>
+                    <div ng-show="item.BackupResults.MainOperation == 'Backup'" style="float: left; width: 50%">
+                        <p>
+                            DeletedFiles: {{ item.BackupResults.DeletedFiles }}
+                        </p>
+                        <p>
+                            DeletedFolders: {{ item.BackupResults.DeletedFolders }}
+                        </p>
+                        <p>
+                            ModifiedFiles: {{ item.BackupResults.ModifiedFiles }}
+                        </p>
+                        <p>
+                            ExaminedFiles: {{ item.BackupResults.ExaminedFiles }}
+                        </p>
+                        <p>
+                            OpenedFiles: {{ item.BackupResults.OpenedFiles }}
+                        </p>
+                        <p>
+                            AddedFiles: {{ item.BackupResults.AddedFiles }}
+                        </p>
+                        <p>
+                            SizeOfModifiedFiles: {{ formatByteSize(item.BackupResults.SizeOfModifiedFiles) }}
+                        </p>
+                        <p>
+                            SizeOfAddedFiles: {{ formatByteSize(item.BackupResults.SizeOfAddedFiles) }}
+                        </p>
+                        <p>
+                            SizeOfExaminedFiles: {{ formatByteSize(item.BackupResults.SizeOfExaminedFiles) }}
+                        </p>
+                        <p>
+                            SizeOfOpenedFiles: {{ formatByteSize(item.BackupResults.SizeOfOpenedFiles) }}
+                        </p>
+                    </div>
+                    <button class="btn btn-small" ng-click="long_info = !long_info" ng-show="short_info && !long_info">
+                        Expand Full info
+                    </button>
+                    <button class="btn btn-small" ng-click="long_info = !long_info" ng-show="short_info && long_info">
+                        Collapse Full info
+                    </button>
+                </div>
+                <div ng-show="long_info && short_info" class="prewrapped-text exceptiontext long-log-info">{{item.Message}}</div>
+                <div ng-show="long_info && short_info" class="prewrapped-text exceptiontext long-log-info">{{item.Exception}}</div>
             </li>
         </ul>
         <div ng-show="GeneralData != null &amp;&amp; !GeneralDataComplete" class="button" ng-click="LoadMoreGeneralData()">
@@ -59,7 +139,12 @@
         <ul class="entries">
             <li ng-show="RemoteData == null" translate>Loading ...</li>
             <li ng-repeat="item in RemoteData">
-                <div ng-click="expanded = !expanded" class="entryline">{{item.Timestamp | parsetimestamp}}: {{item.Operation}} {{item.Path}}</div>
+                <div ng-click="expanded = !expanded" class="entryline">
+                <button class="btn btn-small">
+                        <span ng-show="!expanded">Expand</span>
+                        <span ng-show="expanded">Collapse</span>
+                    </button>
+                {{item.Timestamp | parsetimestamp}}: {{item.Operation}} {{item.Path}}</div>
                 <div ng-show="expanded" class="prewrapped-text exceptiontext">{{item.Data}}</div>
             </li>
         </ul>

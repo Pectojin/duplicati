@@ -91,9 +91,21 @@ namespace Duplicati.Server.WebServer.RESTMethods
 
         private void FetchLogData(IBackup backup, RequestInfo info)
         {
-            using(var con = Duplicati.Library.SQLiteHelper.SQLiteLoader.LoadConnection(backup.DBPath))
-                using(var cmd = con.CreateCommand())
-                    info.OutputOK(LogData.DumpTable(cmd, "LogData", "ID", info.Request.QueryString["offset"].Value, info.Request.QueryString["pagesize"].Value));
+            using (var con = Duplicati.Library.SQLiteHelper.SQLiteLoader.LoadConnection(backup.DBPath))
+            using (var cmd = con.CreateCommand()) {
+                //var messages = LogData.DumpTable(cmd, "LogData", "ID", info.Request.QueryString["offset"].Value, info.Request.QueryString["pagesize"].Value);
+                //foreach(var message in messages)
+                //{
+                //    object msg;
+                //    message.TryGetValue("Message", out msg);
+                //    string[] messageKeys = { "Dryrun", "MainOperation", "CompactResults", "DeleteResults", "RepairResults", "    ParsedResult", "    Duration", "ParsedResult", "Duration" };
+                //    var parsedMessages = msg.ToString().Split('\n').Where(x => messageKeys.Contains(x.Split(':').First().TrimEnd())).ToDictionary(x => x.Split(':').First().Replace("    ", "Test ").Trim(), y => y.Split(':').Last().Trim());
+                //    foreach(var parsedMessage in parsedMessages)
+                //        message.Add(parsedMessage.Key, parsedMessage.Value);
+                //}
+                var messages = LogData.GetTable(cmd, "LogData", "ID", info.Request.QueryString["offset"].Value, info.Request.QueryString["pagesize"].Value);
+                info.OutputOK(messages);
+            }
         }
 
         private void FetchRemoteLogData(IBackup backup, RequestInfo info)

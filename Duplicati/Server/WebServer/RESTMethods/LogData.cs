@@ -15,7 +15,10 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Duplicati.Server.WebServer.RESTMethods
 {
@@ -99,6 +102,119 @@ namespace Duplicati.Server.WebServer.RESTMethods
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// More pretty version of DumpTable. It parses the "Message" string extracting
+        /// the most useful variables so they can be fetched from the dictionary by name
+        /// </summary>
+        public static List<Dictionary<String, Object>> GetTable(System.Data.IDbCommand cmd, string tablename, string pagingfield, string offset_str, string pagesize_str)
+        {
+            var messages = LogData.DumpTable(cmd, tablename, pagingfield, offset_str, pagesize_str);
+            foreach (var message in messages)
+            {
+                // Variable names to extract
+                message.TryGetValue("Message", out object msg);
+
+                // Split up the object
+                var allResults = msg.ToString().Split('\n');
+                // Get the usable "First level" attributes beloning to the backup
+                var BackupResults = 
+                    allResults.Where(x => x.Substring(0, 1) != " "
+                                     && x.Substring(0, 1) != "."
+                                     && x.Substring(0, 1) != "]"
+                                     && x.Substring(x.Length - 1, 1) != "["
+                                     && x.Substring(x.Length - 1, 1) != "]"
+                                     && x.Substring(x.Length - 4, 4) != "null"
+                                     && x.Substring(x.Length - 1, 1) != ":"
+                                     && x.Substring(0, 4) != "Read"
+                                    ).ToDictionary(
+                                        x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                                        y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                                       );
+
+                // Get the index of each "sub element"
+                var CompactResultsIndex = Array.FindIndex(allResults, x => x.Contains("CompactResults"));
+                var DeleteResultsIndex = Array.FindIndex(allResults, x => x.Contains("DeleteResults"));
+                var RepairResultsIndex = Array.FindIndex(allResults, x => x.Contains("RepairResults"));
+                var TestResultsIndex = Array.FindIndex(allResults, x => x.Contains("TestResults"));
+                var BackendStatisticsIndex = Array.FindIndex(allResults, x => x.Contains("BackendStatistics"));
+                var ParsedResultIndex = Array.FindIndex(allResults.Where(x => x.Length > 11).ToArray(), x => x.Substring(0, 12) == "ParsedResult");
+
+                //foreach (var backupResult in backupResults) {
+                //    message.Add(backupResult.Key, backupResult.Value);
+                //}
+
+                message.Add("BackupResults", BackupResults);
+                message.Add("CompactResultsIndex", CompactResultsIndex);
+                message.Add("DeleteResultsIndex", DeleteResultsIndex);
+                message.Add("RepairResultsIndex", RepairResultsIndex);
+                message.Add("TestResultsIndex", TestResultsIndex);
+                message.Add("BackendStatisticsIndex", BackendStatisticsIndex);
+                message.Add("ParsedResultIndex", ParsedResultIndex);
+
+                // Get the sub element attributes
+                var CompactResults = 
+                    allResults.Skip(CompactResultsIndex)
+                              .Take(DeleteResultsIndex - CompactResultsIndex);
+                //.Where(x => x.Length > 4
+                // && x.Substring(4, 1) != " "
+                // && x.Substring(0, 1) != "."
+                // && x.Substring(0, 1) != "]"
+                // && x.Substring(x.Length - 1, 1) != "["
+                // && x.Substring(x.Length - 1, 1) != "]"
+                // && x.Substring(x.Length - 4, 4) != "null"
+                // && x.Substring(x.Length - 1, 1) != ":"
+                //);
+
+                var DeleteResults = allResults.Skip(DeleteResultsIndex)
+                                              .Take(RepairResultsIndex - DeleteResultsIndex);
+
+                var RepairResults = allResults.Skip(RepairResultsIndex)
+                                              .Take(TestResultsIndex - RepairResultsIndex);
+
+                var TestResults = 
+                    allResults.Skip(TestResultsIndex)
+                              .Take(BackendStatisticsIndex - TestResultsIndex)
+                              .Where(x => x.Length > 4
+                                     && x.Substring(4, 1) != " "
+                                     && x.Substring(0, 1) != "]"
+                                     && x.Substring(x.Length - 1, 1) != "["
+                                     && x.Substring(x.Length - 1, 1) != "]"
+                                     && x.Substring(x.Length - 4, 4) != "null"
+                                     && x.Substring(x.Length - 1, 1) != ":"
+                                     && x.Substring(4, 3) != "Key"
+                                     && x.Substring(4, 5) != "Value"
+                                    );
+                //).ToDictionary(
+                //   x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                //   y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                //);
+
+                var BackendStatistics = 
+                    allResults.Skip(BackendStatisticsIndex)
+                              .Take(ParsedResultIndex - BackendStatisticsIndex)
+                              .Where(x => x.Length > 8
+                                     && x.Substring(8, 1) != " "
+                                     && x.Substring(0, 1) != "]"
+                                     && x.Substring(x.Length - 1, 1) != "["
+                                     && x.Substring(x.Length - 1, 1) != "]"
+                                     && x.Substring(x.Length - 4, 4) != "null"
+                                     && x.Substring(x.Length - 1, 1) != ":"
+                                    );
+                //).ToDictionary(
+                //            x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                //            y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                //);
+
+                message.Add("CompactResults", CompactResults);
+                message.Add("DeleteResults", DeleteResults);
+                message.Add("RepairResults", RepairResults);
+                message.Add("TestResults", TestResults);
+                message.Add("BackendStatistics", BackendStatistics);
+
+            }
+            return messages;
         }
 
         public string Description { get { return "Retrieves system log data"; } }
