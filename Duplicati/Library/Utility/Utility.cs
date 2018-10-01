@@ -535,7 +535,7 @@ namespace Duplicati.Library.Utility
         }
 
         /// <summary>
-        /// Appends the appropriate directory separator to paths, depending on OS.
+        /// Appends the specified directory separator to paths.
         /// Does not append the separator if the path already ends with it.
         /// </summary>
         /// <param name="path">The path to append to</param>
@@ -543,9 +543,7 @@ namespace Duplicati.Library.Utility
         /// <returns>The path with the directory separator appended</returns>
         public static string AppendDirSeparator(string path, string separator)
         {
-            return !path.EndsWith(DirectorySeparatorString, StringComparison.Ordinal)
-                ? path + separator
-                : path;
+            return !path.EndsWith(separator, StringComparison.Ordinal) ? path + separator : path;
         }
 
         /// <summary>
@@ -1054,27 +1052,17 @@ namespace Duplicati.Library.Utility
         /// <summary>
         /// Gets a string comparer that matches the client filesystems case sensitivity
         /// </summary>
-        public static StringComparer ClientFilenameStringComparer => IsFSCaseSensitive ? StringComparer.CurrentCulture : StringComparer.CurrentCultureIgnoreCase;
+        public static StringComparer ClientFilenameStringComparer => IsFSCaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
 
         /// <summary>
         /// Gets the string comparision that matches the client filesystems case sensitivity
         /// </summary>
-        public static StringComparison ClientFilenameStringComparison => IsFSCaseSensitive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase;
+        public static StringComparison ClientFilenameStringComparison => IsFSCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
         /// <summary>
         /// The path to the users home directory
         /// </summary>
         public static readonly string HOME_PATH = Environment.GetFolderPath(IsClientLinux ? Environment.SpecialFolder.Personal : Environment.SpecialFolder.UserProfile);
-
-        /// <summary>
-        /// Expands environment variables.
-        /// </summary>
-        /// <returns>The expanded string.</returns>
-        /// <param name="str">The string to expand.</param>
-        public static string ExpandEnvironmentVariables(string str)
-        {
-            return Environment.ExpandEnvironmentVariables(str);
-        }
 
         /// <summary>
         /// Regexp for matching environment variables on Windows (%VAR%)

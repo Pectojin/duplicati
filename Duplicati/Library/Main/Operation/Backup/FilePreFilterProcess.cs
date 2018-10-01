@@ -47,8 +47,6 @@ namespace Duplicati.Library.Main.Operation.Backup
             async self =>
             {
                 var EMPTY_METADATA = Utility.WrapMetadata(new Dictionary<string, string>(), options);
-                var blocksize = options.Blocksize;
-
 
                 // Pre-cache the option variables here to simplify and
                 // speed up repeated option access below
@@ -124,7 +122,7 @@ namespace Duplicati.Library.Main.Operation.Backup
                     }
 
                     // Compute current metadata
-                    e.MetaHashAndSize = SKIPMETADATA ? EMPTY_METADATA : Utility.WrapMetadata(await MetadataGenerator.GenerateMetadataAsync(e.Path, e.Attributes, options, snapshot), options);
+                    e.MetaHashAndSize = SKIPMETADATA ? EMPTY_METADATA : Utility.WrapMetadata(MetadataGenerator.GenerateMetadata(e.Path, e.Attributes, options, snapshot), options);
                     e.MetadataChanged = !SKIPMETADATA && (e.MetaHashAndSize.Blob.Length != e.OldMetaSize || e.MetaHashAndSize.FileHash != e.OldMetaHash);
 
                     // Check if the file is new, or something indicates a change
