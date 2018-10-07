@@ -59,65 +59,94 @@
                         <span ng-show="!short_info">Expand</span>
                         <span ng-show="short_info">Collapse</span>
                     </button>
-                    {{item.Timestamp | parsetimestamp}}: {{ item.BackupResults.MainOperation }}
+                    {{item.Timestamp | parsetimestamp}}: {{ item.MainOperation }}
                 </div>
                 <div ng-show="short_info" class="exceptiontext short-log-info">
-                    <div style="float: left; width: 50%">
+                    <div>
                         <p>
-                            Operation: {{ item.BackupResults.MainOperation }}
-                        </p>
-                        <p ng-show="item.BackupResults.Dryrun != null">
-                            Dry Run: {{ item.BackupResults.Dryrun }}
+                            Operation: {{ item.MainOperation }}
                         </p>
                         <p>
                             Result: {{ item.BackupResults.ParsedResult }}
                         </p>
                         <p>
-                            Duration: {{ formatDuration(item.BackupResults.Duration) }} seconds
+                            Duration: {{ formatDuration(item.BackupResults.Duration) }}
                         </p>
-                        <p>
-                            Test result: {{ item.TestParsedResult }}
-                        </p>
-                        <p ng-show="formatDuration(item.TestDuration) > 0">
-                            Test duration: {{ formatDuration(item.TestDuration) }} seconds
-                        </p>
+                        <span ng-show="!isEmptyObject(item.TestResults) && item.MainOperation != 'Test'">
+                            <hr>
+                            <p>
+                                Test result: {{ item.TestResults.ParsedResult }}
+                            </p>
+                            <p>
+                                Test duration: {{ formatDuration(item.TestResults.Duration) }}
+                            </p>
+                        </span>
+                        <span ng-show="!isEmptyObject(item.DeleteResults) && item.MainOperation != 'Delete'">
+                            <hr>
+                            <p>
+                                Delete result: {{ item.DeleteResults.ParsedResult }}
+                            </p>
+                            <p>
+                                Delete duration: {{ formatDuration(item.DeleteResults.Duration) }}
+                            </p>
+                        </span>
+                        <span ng-show="!isEmptyObject(item.CompactResults)">
+                            <hr>
+                            <p>
+                                Compact result: {{ item.CompactResults.ParsedResult }}
+                            </p>
+                            <p>
+                                Compact duration: {{ formatDuration(item.CompactResults.Duration) }}
+                            </p>
+                        </span>
+                        <span ng-show="item.MainOperation == 'Compact'">
+                            <hr>
+                            <p>
+                                DeletedFiles: {{ item.BackupResults.DeletedFileCount }}
+                            </p>
+                            <p>
+                                DeletedFileSize: {{ formatByteSize(item.BackupResults.DeletedFileSize) }}
+                            </p>
+                        </span>
+                        <span ng-show="item.MainOperation == 'Backup'">
+                            <hr>
+                            <p>
+                                DeletedFiles: {{ item.BackupResults.DeletedFiles }}
+                            </p>
+                            <p>
+                                DeletedFolders: {{ item.BackupResults.DeletedFolders }}
+                            </p>
+                            <p>
+                                ModifiedFiles: {{ item.BackupResults.ModifiedFiles }}
+                            </p>
+                            <p>
+                                ExaminedFiles: {{ item.BackupResults.ExaminedFiles }}
+                            </p>
+                            <p>
+                                OpenedFiles: {{ item.BackupResults.OpenedFiles }}
+                            </p>
+                            <p>
+                                AddedFiles: {{ item.BackupResults.AddedFiles }}
+                            </p>
+                            <p>
+                                SizeOfModifiedFiles: {{ formatByteSize(item.BackupResults.SizeOfModifiedFiles) }}
+                            </p>
+                            <p>
+                                SizeOfAddedFiles: {{ formatByteSize(item.BackupResults.SizeOfAddedFiles) }}
+                            </p>
+                            <p>
+                                SizeOfExaminedFiles: {{ formatByteSize(item.BackupResults.SizeOfExaminedFiles) }}
+                            </p>
+                            <p>
+                                SizeOfOpenedFiles: {{ formatByteSize(item.BackupResults.SizeOfOpenedFiles) }}
+                            </p>
+                        </span>
+                        <hr>
                         <p>
                             Duplicati Version: {{ item.BackupResults.Version }}
                         </p>
-
                     </div>
-                    <div ng-show="item.BackupResults.MainOperation == 'Backup'" style="float: left; width: 50%">
-                        <p>
-                            DeletedFiles: {{ item.BackupResults.DeletedFiles }}
-                        </p>
-                        <p>
-                            DeletedFolders: {{ item.BackupResults.DeletedFolders }}
-                        </p>
-                        <p>
-                            ModifiedFiles: {{ item.BackupResults.ModifiedFiles }}
-                        </p>
-                        <p>
-                            ExaminedFiles: {{ item.BackupResults.ExaminedFiles }}
-                        </p>
-                        <p>
-                            OpenedFiles: {{ item.BackupResults.OpenedFiles }}
-                        </p>
-                        <p>
-                            AddedFiles: {{ item.BackupResults.AddedFiles }}
-                        </p>
-                        <p>
-                            SizeOfModifiedFiles: {{ formatByteSize(item.BackupResults.SizeOfModifiedFiles) }}
-                        </p>
-                        <p>
-                            SizeOfAddedFiles: {{ formatByteSize(item.BackupResults.SizeOfAddedFiles) }}
-                        </p>
-                        <p>
-                            SizeOfExaminedFiles: {{ formatByteSize(item.BackupResults.SizeOfExaminedFiles) }}
-                        </p>
-                        <p>
-                            SizeOfOpenedFiles: {{ formatByteSize(item.BackupResults.SizeOfOpenedFiles) }}
-                        </p>
-                    </div>
+                    <hr>
                     <button class="btn btn-small" ng-click="long_info = !long_info" ng-show="short_info && !long_info">
                         Expand Full info
                     </button>
@@ -140,9 +169,10 @@
             <li ng-show="RemoteData == null" translate>Loading ...</li>
             <li ng-repeat="item in RemoteData">
                 <div ng-click="expanded = !expanded" class="entryline">
-                <button class="btn btn-small">
-                        <span ng-show="!expanded">Expand</span>
-                        <span ng-show="expanded">Collapse</span>
+                <button class="btn btn-small" ng-disabled="item.Data == null">
+                        <span ng-show="item.Data == null">Expanded</span>
+                        <span ng-show="!expanded && item.Data != null">Expand</span>
+                        <span ng-show="expanded && item.Data != null">Collapse</span>
                     </button>
                 {{item.Timestamp | parsetimestamp}}: {{item.Operation}} {{item.Path}}</div>
                 <div ng-show="expanded" class="prewrapped-text exceptiontext">{{item.Data}}</div>

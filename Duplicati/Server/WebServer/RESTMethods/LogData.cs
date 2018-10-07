@@ -119,100 +119,92 @@ namespace Duplicati.Server.WebServer.RESTMethods
                 // Split up the object
                 var allResults = msg.ToString().Split('\n');
                 // Get the usable "First level" attributes beloning to the backup
-                var BackupResults = 
-                    allResults.Where(x => x.Substring(0, 1) != " "
-                                     && x.Substring(0, 1) != "."
-                                     && x.Substring(0, 1) != "]"
-                                     && x.Substring(x.Length - 1, 1) != "["
-                                     && x.Substring(x.Length - 1, 1) != "]"
-                                     && x.Substring(x.Length - 4, 4) != "null"
-                                     && x.Substring(x.Length - 1, 1) != ":"
-                                     && x.Substring(0, 4) != "Read"
-                                    ).ToDictionary(
-                                        x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
-                                        y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
-                                       );
+                var BackupResults = allResults
+                    .Where(x => x.Substring(0, 1) != " "
+                           && x.Substring(0, 1) != "."
+                           && x.Substring(0, 1) != "]"
+                           && x.Substring(x.Length - 1, 1) != "["
+                           && x.Substring(x.Length - 1, 1) != "]"
+                           && x.Substring(x.Length - 4, 4) != "null"
+                           && x.Substring(x.Length - 1, 1) != ":"
+                           && x.Substring(0, 4) != "Read"
+                          ).ToDictionary(
+                              x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                              y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                             );
 
                 // Get the index of each "sub element"
                 var CompactResultsIndex = Array.FindIndex(allResults, x => x.Contains("CompactResults"));
-                var DeleteResultsIndex = Array.FindIndex(allResults, x => x.Contains("DeleteResults"));
                 var RepairResultsIndex = Array.FindIndex(allResults, x => x.Contains("RepairResults"));
+                var DeleteResultsIndex = Array.FindIndex(allResults, x => x.Contains("DeleteResults"));
                 var TestResultsIndex = Array.FindIndex(allResults, x => x.Contains("TestResults"));
                 var BackendStatisticsIndex = Array.FindIndex(allResults, x => x.Contains("BackendStatistics"));
-                var ParsedResultIndex = Array.FindIndex(allResults.Where(x => x.Length > 11).ToArray(), x => x.Substring(0, 12) == "ParsedResult");
 
-                //foreach (var backupResult in backupResults) {
-                //    message.Add(backupResult.Key, backupResult.Value);
-                //}
-
+                string MainOperation = "Unknown";
+                if (BackupResults.TryGetValue("MainOperation", out MainOperation)) {
+                    message.Add("MainOperation", MainOperation);
+                }
+                string ParsedResult = "Unknown";
+                if (BackupResults.TryGetValue("ParsedResult", out ParsedResult))
+                {
+                    message.Add("ParsedResult", ParsedResult);
+                }
                 message.Add("BackupResults", BackupResults);
-                message.Add("CompactResultsIndex", CompactResultsIndex);
-                message.Add("DeleteResultsIndex", DeleteResultsIndex);
-                message.Add("RepairResultsIndex", RepairResultsIndex);
-                message.Add("TestResultsIndex", TestResultsIndex);
-                message.Add("BackendStatisticsIndex", BackendStatisticsIndex);
-                message.Add("ParsedResultIndex", ParsedResultIndex);
 
                 // Get the sub element attributes
-                var CompactResults = 
-                    allResults.Skip(CompactResultsIndex)
-                              .Take(DeleteResultsIndex - CompactResultsIndex);
-                //.Where(x => x.Length > 4
-                // && x.Substring(4, 1) != " "
-                // && x.Substring(0, 1) != "."
-                // && x.Substring(0, 1) != "]"
-                // && x.Substring(x.Length - 1, 1) != "["
-                // && x.Substring(x.Length - 1, 1) != "]"
-                // && x.Substring(x.Length - 4, 4) != "null"
-                // && x.Substring(x.Length - 1, 1) != ":"
-                //);
-
-                var DeleteResults = allResults.Skip(DeleteResultsIndex)
-                                              .Take(RepairResultsIndex - DeleteResultsIndex);
-
-                var RepairResults = allResults.Skip(RepairResultsIndex)
-                                              .Take(TestResultsIndex - RepairResultsIndex);
-
-                var TestResults = 
-                    allResults.Skip(TestResultsIndex)
-                              .Take(BackendStatisticsIndex - TestResultsIndex)
-                              .Where(x => x.Length > 4
-                                     && x.Substring(4, 1) != " "
-                                     && x.Substring(0, 1) != "]"
-                                     && x.Substring(x.Length - 1, 1) != "["
-                                     && x.Substring(x.Length - 1, 1) != "]"
-                                     && x.Substring(x.Length - 4, 4) != "null"
-                                     && x.Substring(x.Length - 1, 1) != ":"
-                                     && x.Substring(4, 3) != "Key"
-                                     && x.Substring(4, 5) != "Value"
-                                    );
-                //).ToDictionary(
-                //   x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
-                //   y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
-                //);
-
-                var BackendStatistics = 
-                    allResults.Skip(BackendStatisticsIndex)
-                              .Take(ParsedResultIndex - BackendStatisticsIndex)
-                              .Where(x => x.Length > 8
-                                     && x.Substring(8, 1) != " "
-                                     && x.Substring(0, 1) != "]"
-                                     && x.Substring(x.Length - 1, 1) != "["
-                                     && x.Substring(x.Length - 1, 1) != "]"
-                                     && x.Substring(x.Length - 4, 4) != "null"
-                                     && x.Substring(x.Length - 1, 1) != ":"
-                                    );
-                //).ToDictionary(
-                //            x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
-                //            y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
-                //);
+                var CompactResults = allResults
+                    .Skip(CompactResultsIndex)
+                    .Take(DeleteResultsIndex - CompactResultsIndex)
+                    .Where(x => x.Length > 4
+                           && x.Substring(4, 1) != " "
+                           && x.Substring(0, 1) != "."
+                           && x.Substring(0, 1) != "]"
+                           && x.Substring(x.Length - 1, 1) != "["
+                           && x.Substring(x.Length - 1, 1) != "]"
+                           && x.Substring(x.Length - 4, 4) != "null"
+                           && x.Substring(x.Length - 1, 1) != ":"
+                          ).ToDictionary(
+                              x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                              y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                         );
+                
+                var DeleteResults = allResults
+                    .Skip(DeleteResultsIndex)
+                    .Take(RepairResultsIndex - DeleteResultsIndex)
+                    .Where(x => x.Length > 4
+                           && x.Substring(4, 1) != " "
+                           && x.Substring(0, 1) != "]"
+                           && x.Substring(x.Length - 1, 1) != "["
+                           && x.Substring(x.Length - 1, 1) != "]"
+                           && x.Substring(x.Length - 4, 4) != "null"
+                           && x.Substring(x.Length - 1, 1) != ":"
+                           && x.Substring(4, 3) != "Key"
+                           && x.Substring(4, 5) != "Value"
+                          ).ToDictionary(
+                              x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                              y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                             );
+                
+                var TestResults = allResults
+                    .Skip(TestResultsIndex)
+                    .Take(BackendStatisticsIndex - TestResultsIndex)
+                    .Where(x => x.Length > 4
+                           && x.Substring(4, 1) != " "
+                           && x.Substring(0, 1) != "]"
+                           && x.Substring(x.Length - 1, 1) != "["
+                           && x.Substring(x.Length - 1, 1) != "]"
+                           && x.Substring(x.Length - 4, 4) != "null"
+                           && x.Substring(x.Length - 1, 1) != ":"
+                           && x.Substring(4, 3) != "Key"
+                           && x.Substring(4, 5) != "Value"
+                          ).ToDictionary(
+                              x => x.Split(new string[] { ": " }, StringSplitOptions.None).First().Trim(),
+                              y => y.Split(new string[] { ": " }, StringSplitOptions.None).Last().Trim()
+                             );
 
                 message.Add("CompactResults", CompactResults);
                 message.Add("DeleteResults", DeleteResults);
-                message.Add("RepairResults", RepairResults);
                 message.Add("TestResults", TestResults);
-                message.Add("BackendStatistics", BackendStatistics);
-
             }
             return messages;
         }

@@ -67,7 +67,6 @@ backupApp.controller('LogController', function($scope, $routeParams, $timeout, S
                     $scope[key] = [];
                 $scope[key].push.apply($scope[key], resp.data);
                 $scope.LoadingData = false;
-                console.log($scope[key]);
                 $scope[key + 'Complete'] = resp.data.length < PAGE_SIZE;
                 if ($scope.BackupID != null)
                     $scope.Backup = BackupList.lookup[$scope.BackupID];
@@ -112,12 +111,19 @@ backupApp.controller('LogController', function($scope, $routeParams, $timeout, S
     $scope.formatDuration = function(duration) {
         // strip miliseconds
         if (duration != null && duration.indexOf(".") > 0) {
-            duration = +duration.substring(0, duration.indexOf("."));
+            duration = duration.substring(0, duration.indexOf("."));
             return duration;
         } else {
             return 0;
         }
     };
+
+    $scope.isEmptyObject = function(obj) {
+        for (var name in obj) {
+            return false;
+        }
+        return true;
+    }
 
     $scope.formatByteSize = function(size) {
         var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
