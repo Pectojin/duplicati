@@ -72,7 +72,7 @@
                         <p>
                             Duration: {{ formatDuration(item.BackupResults.Duration) }}
                         </p>
-                        <span ng-show="!isEmptyObject(item.TestResults) && item.MainOperation != 'Test'">
+                        <span ng-show="!isEmptyObject(item.TestResults) && item.MainOperation == 'Backup'">
                             <hr>
                             <p>
                                 Test result: {{ item.TestResults.ParsedResult }}
